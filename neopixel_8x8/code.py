@@ -1,53 +1,44 @@
-# Drive a NeoPixel 8x8 matrix
+# Drive a NeoPixel 8x8 matrix (https://www.adafruit.com/product/1487)
+# from a Raspberry Pi Pico (https://www.raspberrypi.org/documentation)
 # RGB colors cycle up and down in relatively prime steps
 
 import board
 import neopixel
 import time
 
-num_pixels = 8 * 8
+num_pixels = 8 * 8 # Adafruit 8x8 NeoPixel matrix: 
 loop_delay = 0.02  # color refresh rate. 0.01 = too fast.  0.05 = too slow
 
 pixels = neopixel.NeoPixel(board.GP19, num_pixels)
 pixels.brightness = 0.5  # reduce from 1.0 b/c all pixels are on
 
-# starting color
-r = 128
-g = 0
-b = 128
+class ColorComponent:
+    ''' A color component (e.g. r, g, b) that cycles up and down
+        between 0 and 255 with a particular step size. '''
+    def __init__(self, start, step):
+        self.value : int  = start
+        self.step : int  = step
+        self.direction : int = 1  # control the direction of change
+                                  # 1 = up, -1 = down
+    
+    def update(self):
+        self.value = self.value + self.direction * self.step
+        if not (0 <= self.value <= 255):   # if not in range
+             self.value = max(0, min(255, self.value))  # clamp
+             self.direction = -self.direction # and reverse direction 
+        # print(self.value)
 
-# control the direction of change
-# 1 = up, -1 = down
-rdir = 1
-gdir = 1
-bdir = 1
-
+    # TODO:  figure out why __int__ doesn't work.  Micropython maybe?
+    # def __int__(self):
+    #     return self.value
+    
+r: ColorComponent = ColorComponent(128, 2)  # use relatively prime steps
+g: ColorComponent = ColorComponent(0, 3)    # to avoid color repetition
+b: ColorComponent = ColorComponent(128, 5)
 
 while True:
-    r = r + rdir * 2
-    if r < 0:
-        r = 0
-        rdir = -rdir
-    if r > 255:
-        r = 255
-        rdir = -rdir
+    for cc in [r,g,b]:
+        cc.update()
 
-    g = g + gdir * 3
-    if g < 0:
-        g = 0
-        gdir = -gdir
-    if g > 255:
-        g = 255
-        gdir = -gdir
-
-    b = (b + bdir * 5)
-    if b < 0:
-        b = 0
-        bdir = -bdir
-    if b > 255:
-        b = 255
-        bdir = -bdir
-
-    # print("(r, g, b): ", (r, g, b))
-    pixels.fill((r, g, b))
+    pixels.fill((r.value, g.value, b.value))  # have to use .value  (__int__ doesn't work)
     time.sleep(loop_delay)
