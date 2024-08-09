@@ -10,7 +10,7 @@ num_pixels = 8 * 8 # Adafruit 8x8 NeoPixel matrix:
 loop_delay = 0.02  # color refresh rate. 0.01 = too fast.  0.05 = too slow
 
 pixels = neopixel.NeoPixel(board.GP19, num_pixels)
-pixels.brightness = 0.5  # reduce from 1.0 b/c all pixels are on
+pixels.brightness = 0.1  # reduce from 1.0 b/c all pixels are on
 
 class ColorComponent:
     ''' A color component (e.g. r, g, b) that cycles up and down
