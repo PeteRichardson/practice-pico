@@ -1,3 +1,6 @@
+# Taken from https://github.com/makeuseofcode/Raspberry-Pi-Pico-W-WH-Bluetooth-Example-in-MicroPython.git
+# which is based on https://github.com/raspberrypi/pico-micropython-examples/
+#
 # This example demonstrates a simple temperature sensor peripheral.
 #
 # The sensor's local value is updated, and it will notify
@@ -79,7 +82,7 @@ class BLETemperature:
                     # Indicate connected centrals.
                     self._ble.gatts_indicate(conn_handle, self._handle)
 
-    def _advertise(self, interval_us=500000):
+    def _advertise(self, interval_us=2000000):
         self._ble.gap_advertise(interval_us, adv_data=self._payload)
 
     # ref https://github.com/raspberrypi/pico-micropython-examples/blob/master/adc/temperature.py
@@ -94,14 +97,21 @@ class BLETemperature:
 def demo():
     ble = bluetooth.BLE()
     temp = BLETemperature(ble)
-    counter = 0
     led = Pin('LED', Pin.OUT)
+    
+    print("pausing for interrupt:\n\t3s)")
+    time.sleep_ms(1000)
+    print("\t2s")
+    time.sleep_ms(1000)
+    print("\t1s")
+    time.sleep_ms(1000)
+    print("starting measurements")
     while True:
-        if counter % 10 == 0:
-            temp.update_temperature(notify=True, indicate=False)
-        led.toggle()
-        time.sleep_ms(1000)
-        counter += 1
+        led.on()
+        temp.update_temperature(notify=False, indicate=False)
+        led.off()
+        machine.lightsleep(5000) # use lightsleep to save power
+
 
 if __name__ == "__main__":
     demo()
